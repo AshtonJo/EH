@@ -1,0 +1,34 @@
+
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// https://coffeeandbreakfast.tistory.com/entry/%ED%8C%8C%EC%9D%B8-%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8-Pine-Script-%EB%AC%B4%EC%9E%91%EC%A0%95-%EB%94%B0%EB%9D%BC%ED%95%98%EA%B8%B0
+//@version=5
+
+strategy("전략1 ", pyramiding=2, overlay = true, initial_capital = 10000000, default_qty_type = strategy.percent_of_equity, default_qty_value = 100, process_orders_on_close = true)
+
+eth_ema = ta.ema(close,20)
+length = high - low
+k = input.float(0.5)
+
+new_length = length * k 
+entry_price = close + new_length 
+
+// Make input options that configure backtest date range
+
+startDate = input(1,title="Start Date")
+startYear = input(2021,title="Start Year")
+startMonth = input(1,title="Start Month")
+testStart = timestamp(startYear,startMonth,startDate,0,0)
+endDate = input(31,title="End Date")
+endMonth = input(12,title="End Month")
+endYear = input(2022,title="End Year")
+testEnd = timestamp(endYear,endMonth,endDate,23,59)
+testPeriod() => time >= testStart and time <= testEnd ? true : false 
+plot(eth_ema,offset = 1,linewidth = 1,color = color.red)
+plot(close, offset = 1, linewidth = 2, color = color.white) 
+plot(entry_price, offset = 1, linewidth = 2, color = color.yellow) 
+
+if testPeriod()
+    if entry_price > eth_ema
+        strategy.entry("매수", strategy.long, stop = entry_price)
+    strategy.close("매수",comment = "매도")
+
